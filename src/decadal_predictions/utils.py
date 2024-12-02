@@ -45,9 +45,14 @@ def get_hindcast_sequence(
     N = lead_year_range[-1] - lead_year_range[0] + 1
 
     # find all matching files:
+    if (variable == '10m_wind_speed') & (mod_type == 'NorCPM1'):
+        search_path = data_paths['processed']/mod_type
+    else:
+        search_path = data_paths['hindcast'][mod_type]
+    
     all_var_files = sorted(
         list(
-            data_paths['hindcast'][mod_type].glob(
+            search_path.glob(
                 '*/{0}_Amon_{1}_dcppA-hindcast_s*.nc'.format(var_name_map['long_to_cmip'][variable],mod_type)
             )
         )

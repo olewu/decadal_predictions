@@ -15,15 +15,16 @@ def hyb_climatology(ds_Nyear_rolling:xr.Dataset,clim_years:int=15):
 
     return hyb_clim
 
-def make_vf_hybC_climatologies(types,vars,Ns,period,smoothing_degrees,clim_years=15,save_clim=True):
+def make_vf_hybC_climatologies(vf_types,vars,Ns,period,smoothing_degrees,clim_years=15,save_clim=True):
     # collect coordinates of the verification to interpolate hindcasts to a matching grid later:
     vf_coords = {}
-    for type in types:
-        vf_coords[type] = {}
+    for vf_type in vf_types:
+        vf_coords[vf_type] = {}
         for var in vars:
+            print(f'processing {vf_type} {var}')
             # load verfication dataset (monthly means)
-            ds_vf,vf_orig_coords = load_verification(var,period,vf_type=type)
-            vf_coords[type][var] = vf_orig_coords
+            ds_vf,vf_orig_coords = load_verification(var,period,vf_type=vf_type)
+            vf_coords[vf_type][var] = vf_orig_coords
             # coarsen resolution to required number of degrees
             ds_vf_coarse = ds_downsample_to_N_degrees(ds_vf,smoothing_degrees)
             # go through time aggregations:
@@ -37,7 +38,7 @@ def make_vf_hybC_climatologies(types,vars,Ns,period,smoothing_degrees,clim_years
 
                 #------------filename------------#
                 anom_path = data_paths['processed']/'verification/{0}/{1}'.format(
-                    type,var
+                    vf_type,var
                 )
                 # make path if it doesn't exist:
                 anom_path.mkdir(parents=True,exist_ok=True)
@@ -59,8 +60,7 @@ def make_hindcast_hybC_anomalies(hc_types,vars,lead_year_ranges,hc_period,smooth
 
     for hc_type in hc_types:
         for var in vars:
-
-
+            print(f'processing {hc_type} {var}')
             for lead_year_range in lead_year_ranges:
 
                 ds_hc_lt = get_hindcast_sequence(
@@ -98,7 +98,6 @@ if __name__ == '__main__':
     vf_types = ['ERA5']
     vf_interp = vf_types[0]
     hc_types = ['NorCPM1']
-    # vars = [ 'total_precipitation', '10m_wind_speed', 'surface_net_solar_radiation'] # 
     vars = ['2m_temperature','total_precipitation','surface_net_solar_radiation','10m_wind_speed']
     Ns = [4,8]
     lead_year_ranges = [[2,9],[2,5],[6,9]]
