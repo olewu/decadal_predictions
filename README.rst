@@ -34,11 +34,15 @@ decadal_predictions
 ===================
 
 
-    Add a short description here!
+    Process and evaluate decadal hindcasts and make post-processed predictions
 
 
-A longer description of your project goes here...
+Installation:
+===================
 
+- Clone repository
+- Navigate to repository base
+- pip install in editable mode using `pip install -e .`
 
 .. _pyscaffold-notes:
 
