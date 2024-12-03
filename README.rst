@@ -40,9 +40,11 @@ decadal_predictions
 Installation:
 ===================
 
-- Clone repository
+- Start by creating a separate environment and install the required dependencies; I prefer conda, e.g. ``conda create -n decadal_predictions proplot xarray xeofs cartopy``
+- Activate the environment
+- Clone this repository
 - Navigate to repository base
-- pip install in editable mode using `pip install -e .`
+- pip install in editable mode using ``pip install -e .``
 
 .. _pyscaffold-notes:
 
