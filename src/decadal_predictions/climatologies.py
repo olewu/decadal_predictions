@@ -78,7 +78,7 @@ def make_hindcast_hybC_anomalies(hc_types,vars,lead_year_ranges,hc_period,smooth
 
                 #------------filename------------#
                 hc_anom_path = data_paths['processed']/'hindcast/{1}/{0}'.format(
-                    var_name_map['long_to_cmip'][var],
+                    var,
                     hc_type
                 )
                 hc_anom_path.mkdir(parents=True,exist_ok=True)

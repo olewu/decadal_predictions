@@ -1,8 +1,9 @@
 # Some generally useful definitions
 from pathlib import Path
+import os
 
+# proj_base = Path(os.path.dirname(os.path.realpath(__file__))).parents[0]
 base_path = Path('/projects/NS9873K')
-proj_path = base_path/'owul/projects/pilot4_statkraft'
 proc_data_path = base_path/'owul/data/statkraft_pilot4/decadal_predictions'
 
 NAO_box = {
@@ -67,4 +68,6 @@ data_paths = {
         # others?
     },
     'processed':proc_data_path,
+    'figures':base_path/'owul/figures/decadal_predictions',
+    'figures_online':base_path/'www/decadal/hindcast_scores'
 }
