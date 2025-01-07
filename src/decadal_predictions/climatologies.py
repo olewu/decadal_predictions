@@ -1,5 +1,8 @@
 import xarray as xr
 from decadal_predictions.utils import *
+from decadal_predictions.config import *
+
+drop_vars = ['height','area','gw','lat_bnds','lon_bnds']
 
 def hyb_climatology(ds_Nyear_rolling:xr.Dataset,clim_years:int=15):
     """
@@ -15,16 +18,17 @@ def hyb_climatology(ds_Nyear_rolling:xr.Dataset,clim_years:int=15):
 
     return hyb_clim
 
-def make_vf_hybC_climatologies(vf_types,vars,Ns,period,smoothing_degrees,clim_years=15,save_clim=True):
+def make_vf_hybC_climatologies(vf_types,variables,Ns,period,smoothing_degrees,clim_years=15,save_clim=True):
     # collect coordinates of the verification to interpolate hindcasts to a matching grid later:
-    vf_coords = {}
+    # vf_coords = {}
     for vf_type in vf_types:
-        vf_coords[vf_type] = {}
-        for var in vars:
+        # vf_coords[vf_type] = {}
+        for var in variables:
             print(f'processing {vf_type} {var}')
             # load verfication dataset (monthly means)
-            ds_vf,vf_orig_coords = load_verification(var,period,vf_type=vf_type)
-            vf_coords[vf_type][var] = vf_orig_coords
+            ds_vf = load_verification(var,period,vf_type=vf_type)
+            ds_vf = adjust_latlon(ds_vf)
+            # vf_coords[vf_type][var] = ds_vf.coords
             # coarsen resolution to required number of degrees
             ds_vf_coarse = ds_downsample_to_N_degrees(ds_vf,smoothing_degrees)
             # go through time aggregations:
@@ -53,13 +57,14 @@ def make_vf_hybC_climatologies(vf_types,vars,Ns,period,smoothing_degrees,clim_ye
                 if save_clim:
                     ds_vf_clim.to_netcdf(anom_path/anom_vf_filename.replace('_anom_','_clim_'))
 
+    # return vf_coords
 
-    return vf_coords
-
-def make_hindcast_hybC_anomalies(hc_types,vars,lead_year_ranges,hc_period,smoothing_degrees,ensmem_dim='mem',interp_coords=None,clim_years=15,save_clim=True):
+def make_hindcast_hybC_anomalies(hc_types,variables,lead_year_ranges,hc_period,smoothing_degrees,ensmem_dim='mme_member',clim_years=15,save_clim=True):
 
     for hc_type in hc_types:
-        for var in vars:
+        for var in variables:
+            # if (var == '2m_temperature') & (hc_type == 'EC-Earth3'):
+            #     continue
             print(f'processing {hc_type} {var}')
             for lead_year_range in lead_year_ranges:
 
@@ -68,13 +73,17 @@ def make_hindcast_hybC_anomalies(hc_types,vars,lead_year_ranges,hc_period,smooth
                     period=hc_period,
                     lead_year_range=lead_year_range,
                     mod_type=hc_type,
-                    interpolate_coords=interp_coords[var],
                     N_deg=smoothing_degrees,
                 )
                 hc_clim = hyb_climatology(ds_hc_lt.mean(ensmem_dim),clim_years=clim_years)
+                
+                # drop unnecessary grid variables from the data
+                drp_vrs = [drv for drv in drop_vars if drv in list(hc_clim)]
+                hc_clim = hc_clim.drop_vars(drp_vrs)
 
                 # compute anomalies:
                 hc_anom = ds_hc_lt - hc_clim
+
 
                 #------------filename------------#
                 hc_anom_path = data_paths['processed']/'hindcast/{1}/{0}'.format(
@@ -96,9 +105,8 @@ def make_hindcast_hybC_anomalies(hc_types,vars,lead_year_ranges,hc_period,smooth
 if __name__ == '__main__':
 
     vf_types = ['ERA5']
-    vf_interp = vf_types[0]
-    hc_types = ['NorCPM1']
-    vars = ['2m_temperature','total_precipitation','surface_net_solar_radiation','10m_wind_speed']
+    hc_types = [mod for _,mod in model_name_map.items()] # ['NorCPM1'] # ,
+    variables = ['total_precipitation'] # , '2m_temperature','surface_net_solar_radiation','10m_wind_speed','mean_sea_level_pressure'
     Ns = [4,8]
     lead_year_ranges = [[2,9],[2,5],[6,9]]
     period = [1960,2023] # period to load data for
@@ -107,9 +115,9 @@ if __name__ == '__main__':
     clim_years = 15
 
     # compute verification climatologies: should take ~ 25s
-    vf_coords = make_vf_hybC_climatologies(vf_types,vars,Ns,period,smoothing_degrees,clim_years)
+    make_vf_hybC_climatologies(vf_types,variables,Ns,period,smoothing_degrees,clim_years,save_clim=False)
 
-    # this takes about 18 mins for a single hindcast variable
-    # (single combination of (hc_type,var)) on NIRD login node, i.e. for all 4 variables ~ 18 mins * 4 = 72 mins
-    make_hindcast_hybC_anomalies(hc_types,vars,lead_year_ranges,hc_period,smoothing_degrees,interp_coords=vf_coords[vf_interp],clim_years=clim_years)
+    # this takes 2-3 mins for a single hindcast variable
+    # (single combination of (hc_type,var)) on NIRD login node, i.e. for all 5 variables ~ 3 mins * 5 = 15 mins and then times the number of models (6) ~ 6 * 15 mins = 90 mins
+    make_hindcast_hybC_anomalies(hc_types,variables,lead_year_ranges,hc_period,smoothing_degrees,clim_years=clim_years)
 
