@@ -5,6 +5,9 @@ import os
 # proj_base = Path(os.path.dirname(os.path.realpath(__file__))).parents[0]
 base_path = Path('/projects/NS9873K')
 
+# lagged ensemble factor 
+k_lag = 4
+
 example_grid_file = '/projects/NS9873K/DATA/SFE/ERA5/res_6hrly_1/2m_temperature/2m_temperature_2000_01.nc'
 
 NAO_box = {
@@ -67,6 +70,31 @@ var_name_map = {
     }
 }
 
+unit_conversion = {
+    'ERA5':{
+        "t2m":1,
+        "tp":1000, # to get from m to mm
+        "si10":1,
+        "ssr":1/86400, # to get from J/s to W/m^2
+        "msl":1/100, # to get from Pa to hPa
+    },
+    'DCPP':{
+        "t2m":1,
+        "tp":86400, # to get from kg/m2/s to mm
+        "si10":1,
+        "ssr":1,
+        "msl":1/100, # to get from Pa to hPa
+    }
+}
+
+units = {
+    "t2m":"˚C",
+    "tp":"mm",
+    "si10":"m/s",
+    "ssr":"W/m^2",
+    "msl":"hPa",
+}
+
 data_paths = {
     'verification':{
         'ERA5':base_path/'DATA/SFE/ERA5/res_monthly_1',
@@ -79,9 +107,9 @@ data_paths = {
         'CMCC-CM2-SR5':Path('/datalake/NS9873K/DATA/DCPP/dcppA-hindcast/CMCC-CM2-SR5/'),
         'MPI-ESM1-2-HR':Path('/datalake/NS9873K/DATA/DCPP/dcppA-hindcast/MPI-ESM1-2-HR/'),
         'CanESM5':Path('/datalake/NS9873K/DATA/DCPP/dcppA-hindcast/CanESM5/'),
-        # 'MPI-ESM1-2-LR':Path('/datalake/NS9873K/DATA/DCPP/dcppA-hindcast/MPI-ESM1-2-LR/'),
-        # 'CNRM-ESM2-1':Path('/datalake/NS9873K/DATA/DCPP/dcppA-hindcast/CNRM-ESM2-1/'),
-        # 'MIROC6':Path('/datalake/NS9873K/DATA/DCPP/dcppA-hindcast/MIROC6/'),
+        'MPI-ESM1-2-LR':Path('/datalake/NS9873K/DATA/DCPP/dcppA-hindcast/MPI-ESM1-2-LR/'),
+        'CNRM-ESM2-1':Path('/datalake/NS9873K/DATA/DCPP/dcppA-hindcast/CNRM-ESM2-1/'),
+        'MIROC6':Path('/datalake/NS9873K/DATA/DCPP/dcppA-hindcast/MIROC6/'),
     },
     'forecast':{
         'NorCPM1':Path('/projects/NS9034K/CMIP6/.cmorout/NorCPM1/dcppB-forecast'),
@@ -89,7 +117,7 @@ data_paths = {
     },
     'processed':base_path/'owul/data/statkraft_pilot4/decadal_predictions',
     'figures':base_path/'owul/figures/decadal_predictions',
-    'figures_online':base_path/'www/decadal/hindcast_scores'
+    'figures_online':base_path/'www/decadal'
 }
 
 available_models = [
@@ -119,6 +147,18 @@ model_name_map = {
 available_models_long = [model_name_map[mod] for mod in available_models]
 
 model_name_map_r = {val:key for key,val in model_name_map.items()}
+
+expected_hindcast_ens_size = {
+    "NorCPM1":20,
+    "EC-Earth3":16,
+    "HadGEM3-GC31-MM":10,
+    "CMCC-CM2-SR5":20,
+    "MPI-ESM1-2-HR":10,
+    "CanESM5":20,
+    # "MPI-ESM1-2-LR":10,
+    # "CNRM-ESM2-1":20,
+    # "MIROC6":20,
+}
 
 model_encoding = {
     "NorCPM1":1,

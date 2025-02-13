@@ -10,9 +10,9 @@ def RMSE_compute(vf,fc,tdim='year'):
     
     return ((fc - vf)**2).mean(tdim)**.5
 
-def evaluation(vf,fc,var,score_names=['ACC','RMSE','STD'],tdim='year',ensmem_dim='mme_member',vf_coord_map={'latitude':'lat','longitude':'lon'}):
+def evaluation(vf,fc,var,score_names=['ACC','RMSE','STD'],tdim='year',vf_coord_map={'latitude':'lat','longitude':'lon'}):
 
-    fcem_da = fc.mean(ensmem_dim)[var_name_map['long_to_cmip'][var]].squeeze()
+    fcem_da = fc[var_name_map['long_to_cmip'][var]].squeeze()
     vf_da = vf.rename(vf_coord_map)[var_name_map['long_to_cf'][var]]
 
     scores = {}
@@ -79,4 +79,4 @@ if __name__ == '__main__':
             pc2 = axs[1].pcolormesh(lons,lats,RMSESS.values,levels=levels,cmap='Div')
             fig.colorbar(pc2, loc='r', span=2, label='', extendsize='1.7em')
 
-            fig.savefig(data_paths['figures_online']/f'scores_{var}_hyb{clim_years}_anom_{hcps}-{hcpe}_LY{lys}-{lye}_{smoothing_degrees}deg_{hc_type}_vs_{vf_type}.png')
+            fig.savefig(data_paths['figures_online']/f'hindcast_scoers/scores_{var}_hyb{clim_years}_anom_{hcps}-{hcpe}_LY{lys}-{lye}_{smoothing_degrees}deg_{hc_type}_vs_{vf_type}.png')
